@@ -1,5 +1,5 @@
 // 极简说说 — 前端核心（独立页与嵌入 iframe 复用）
-const state = { user: null, posts: [], nextCursor: 0, replyTo: null, authMode: 'login' };
+const state = { user: null, posts: [], nextCursor: 0, replyTo: null, authMode: 'login', editing: null };
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -32,6 +32,11 @@ function renderContent(text) {
     if (/^javascript:/i.test(href)) return token.text ?? '';
     return `<a href="${esc(href)}"${token.title ? ` title="${esc(token.title)}"` : ''} target="_blank" rel="noopener">${token.text ?? ''}</a>`;
   };
+  renderer.image = (token) => {
+    const src = String(token.href ?? '');
+    if (/^javascript:/i.test(src)) return '';
+    return `<img src="${esc(src)}" alt="${esc(token.text ?? '')}"${token.title ? ` title="${esc(token.title)}"` : ''} loading="lazy">`;
+  };
   // callout 支持：> [!note] 标题行
   renderer.blockquote = function (token) {
     const html = this.parser.parse(token.tokens);
@@ -62,10 +67,21 @@ async function loadPosts(reset = false) {
 function render() {
   document.getElementById('auth-area') && (document.getElementById('auth-area').innerHTML = authHTML());
   document.getElementById('composer').innerHTML = composerHTML();
-  document.getElementById('list').innerHTML = state.posts.map(postHTML).join('');
+  document.getElementById('list').innerHTML = state.posts.length
+    ? state.posts.map(postHTML).join('')
+    : '<p class="tip">NULL</p>';
   document.getElementById('more').innerHTML = state.nextCursor ? '<button onclick="loadPosts()">加载更多</button>' : '';
   document.getElementById('admin-area').style.display = state.user?.role === 'admin' ? '' : 'none';
+  notifyHeight();
 }
+
+// 嵌入模式：把自身高度通知父页面（Hugo 等宿主调整 iframe 高度）
+function notifyHeight() {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'mumble-height', height: document.body.scrollHeight }, '*');
+  }
+}
+window.addEventListener('load', notifyHeight);
 
 function authHTML() {
   if (state.user) {
@@ -100,7 +116,7 @@ function composerHTML() {
   if (!state.user) return '<p class="tip">登录后可发言</p>';
   if (state.user.approved !== 1) return '<p class="tip">账号待管理员审核，通过后可发言</p>';
   return `<form class="composer" onsubmit="submitPost(event)">
-    <textarea id="content" placeholder="说点什么…支持 Markdown 与 $公式$"></textarea>
+    <textarea id="content" placeholder="说点什么…支持 Markdown 与 $公式$" maxlength="5000"></textarea>
     ${state.replyTo ? `<div class="reply-hint">正在回复 #${state.replyTo.id} ${esc(state.replyTo.name)} <span class="link" onclick="cancelReply()">取消</span></div>` : ''}
     <div class="actions"><button class="btn-primary" type="submit">发布</button></div>
   </form>`;
@@ -119,15 +135,20 @@ function findPost(id) {
 }
 
 function postHTML(p) {
+  const editing = state.editing === p.id;
+  const contentHtml = editing
+    ? `<textarea id="edit-content" maxlength="5000">${esc(p.content)}</textarea>
+       <div class="actions"><button class="btn-primary" onclick="saveEdit(${p.id})">保存</button><button onclick="cancelEdit()">取消</button></div>`
+    : `<div class="content">${renderContent(p.content)}</div>`;
   const replies = p.replies.map((r) => `<li><article class="post">
     <header><span class="author">${esc(r.author_name)}</span><time>${fmtDate(r.created_at)}</time>${adminBtns(r)}</header>
     <div class="content">${renderContent(r.content)}</div>
   </article></li>`).join('');
   return `<article class="post">
     <header><span class="author">${esc(p.author_name)}</span><time>${fmtDate(p.created_at)}</time>${adminBtns(p)}</header>
-    <div class="content">${renderContent(p.content)}</div>
-    ${replies ? `<ul class="replies">${replies}</ul>` : ''}
-    ${state.user?.approved === 1 ? `<button onclick="replyTo(${p.id},'${esc(p.author_name)}')">回复</button>` : ''}
+    ${contentHtml}
+    ${editing ? '' : (replies ? `<ul class="replies">${replies}</ul>` : '')}
+    ${editing ? '' : (state.user?.approved === 1 ? `<button onclick="replyTo(${p.id},'${esc(p.author_name)}')">回复</button>` : '')}
   </article>`;
 }
 
@@ -163,10 +184,17 @@ function cancelReply() { state.replyTo = null; render(); }
 async function editPost(btn) {
   const post = findPost(Number(btn.dataset.id));
   if (!post) return;
-  const next = prompt('编辑内容', post.content);
-  if (next === null) return;
-  const r = await api(`/api/posts/${post.id}`, { method: 'PUT', body: JSON.stringify({ content: next }) });
-  if (r.success) await loadPosts(true);
+  state.editing = post.id;
+  render();
+}
+
+function cancelEdit() { state.editing = null; render(); }
+
+async function saveEdit(id) {
+  const next = document.getElementById('edit-content').value.trim();
+  if (!next) return;
+  const r = await api(`/api/posts/${id}`, { method: 'PUT', body: JSON.stringify({ content: next }) });
+  if (r.success) { state.editing = null; await loadPosts(true); }
 }
 
 async function deletePost(btn) {

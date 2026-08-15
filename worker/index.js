@@ -112,6 +112,9 @@ function sessionCookie(token) {
 
 const clearSessionCookie = () => `${SESSION_COOKIE}=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax`;
 
+// ---------- 工具 ----------
+const xmlEscape = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
 // ---------- 入口 ----------
 export default {
   async fetch(request, env) {
@@ -165,6 +168,32 @@ export default {
       }
 
       // ---------- 帖子 ----------
+      if (path === '/rss' && request.method === 'GET') {
+        const rows = await env.DB.prepare(
+          'SELECT id, content, author_name, created_at FROM posts WHERE parent_id IS NULL ORDER BY id DESC LIMIT 20'
+        ).all();
+        const origin = url.origin;
+        const title = env.SITE_TITLE || 'Mumble';
+        const items = rows.results.map((p) => `
+    <item>
+      <title>${xmlEscape(p.author_name)}</title>
+      <link>${origin}/#${p.id}</link>
+      <guid isPermaLink="false">mumble-${p.id}</guid>
+      <pubDate>${new Date(String(p.created_at).replace(' ', 'T') + 'Z').toUTCString()}</pubDate>
+      <description>${xmlEscape(p.content)}</description>
+    </item>`).join('');
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${xmlEscape(title)}</title>
+    <link>${origin}/</link>
+    <description>${xmlEscape(title)}</description>
+    ${items}
+  </channel>
+</rss>`;
+        return new Response(xml, { headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' } });
+      }
+
       if (path === '/api/posts' && request.method === 'GET') {
         const limit = Math.min(Number(url.searchParams.get('limit')) || 20, 50);
         const cursor = Number(url.searchParams.get('cursor')) || 0;

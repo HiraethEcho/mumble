@@ -22,3 +22,8 @@
 #app ul.userlist { list-style: none; margin: 6px 0; padding: 0; }
 #app ul.userlist li { display: flex; gap: 10px; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(127,127,127,.12); font-size: .9em; flex-wrap: wrap; }
 #app ul.userlist .actions { margin: 0; }
+
+@media (max-width: 480px) {
+  #app .auth-form { width: 100%; }
+  #app .auth-form input { flex: 1; min-width: 0; }
+}
