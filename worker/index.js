@@ -16,17 +16,19 @@ async function verifyPassword(password, stored) {
 }
 
 // ---------- 自动建表 + seed 管理员 ----------
+const USERS_TABLE = `CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE,
+  password_hash TEXT NOT NULL,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'user',
+  approved INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+)`;
+
 async function initializeDatabase(env) {
   const batch = [
-    env.DB.prepare(`CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      name TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'user',
-      approved INTEGER NOT NULL DEFAULT 0,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    )`),
+    env.DB.prepare(USERS_TABLE),
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS posts (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       content TEXT NOT NULL,
@@ -41,6 +43,26 @@ async function initializeDatabase(env) {
     env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_posts_parent ON posts(parent_id)`),
   ];
   await env.DB.batch(batch);
+
+  // 迁移：email 从 NOT NULL → 可空（email 选填），保留已有数据
+  const cols = await env.DB.prepare('PRAGMA table_info(users)').all();
+  const emailCol = cols.results.find((c) => c.name === 'email');
+  if (emailCol && emailCol.notnull === 1) {
+    await env.DB.batch([
+      env.DB.prepare('ALTER TABLE users RENAME TO users_old'),
+      env.DB.prepare(`CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE,
+        password_hash TEXT NOT NULL,
+        name TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'user',
+        approved INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )`),
+      env.DB.prepare('INSERT INTO users (id, email, password_hash, name, role, approved, created_at) SELECT id, email, password_hash, name, role, approved, created_at FROM users_old'),
+      env.DB.prepare('DROP TABLE users_old'),
+    ]);
+  }
 
   // seed 管理员（仅当无 admin 时）
   if (env.ADMIN_EMAIL && env.ADMIN_PASSWORD) {
@@ -100,13 +122,16 @@ export default {
 
       if (path === '/api/auth/register' && request.method === 'POST') {
         const body = await request.json().catch(() => null);
-        if (!body?.email || !body?.password || !body?.name) return json({ success: false, error: 'email/password/name 必填' }, 400);
-        if (!body.email.includes('@')) return json({ success: false, error: '邮箱格式错误' }, 400);
+        if (!body?.name?.trim() || !body?.password) return json({ success: false, error: '昵称/密码必填' }, 400);
+        if (body.email && !body.email.includes('@')) return json({ success: false, error: '邮箱格式错误' }, 400);
         if (body.password.length < 6) return json({ success: false, error: '密码至少 6 位' }, 400);
-        const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(body.email).first();
-        if (existing) return json({ success: false, error: '邮箱已注册' }, 409);
+        if (body.email) {
+          const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(body.email).first();
+          if (existing) return json({ success: false, error: '邮箱已注册' }, 409);
+        }
         const hash = await hashPassword(body.password);
-        const result = await env.DB.prepare('INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)').bind(body.email, hash, body.name).run();
+        const result = await env.DB.prepare('INSERT INTO users (email, password_hash, name) VALUES (?, ?, ?)')
+          .bind(body.email || null, hash, body.name.trim()).run();
         return json({ success: true, message: '注册成功，等待管理员审核', data: { id: result.meta.last_row_id } });
       }
 

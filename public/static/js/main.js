@@ -75,7 +75,7 @@ function authHTML() {
   return `<div class="auth">
     <form class="auth-form" onsubmit="doRegister(event)">
       <input id="rg-name" placeholder="昵称" required>
-      <input id="rg-email" type="email" placeholder="邮箱" required>
+      <input id="rg-email" type="email" placeholder="邮箱(选填)">
       <input id="rg-pass" type="password" placeholder="密码(至少6位)" required>
       <button class="btn-primary" type="submit">注册</button>
     </form>
@@ -97,16 +97,16 @@ const adminBtns = (p) => state.user?.role === 'admin'
   ? `<button onclick="editPost(${p.id},${JSON.stringify(p.content)})">编辑</button><button onclick="deletePost(${p.id})">删除</button>` : '';
 
 function postHTML(p) {
-  const replies = p.replies.map((r) => `<div class="card post">
-    <div class="post-head"><span class="author">${esc(r.author_name)}</span><span class="time">${fmtDate(r.created_at)}</span>${adminBtns(r)}</div>
+  const replies = p.replies.map((r) => `<li><article class="post">
+    <header><span class="author">${esc(r.author_name)}</span><time>${fmtDate(r.created_at)}</time>${adminBtns(r)}</header>
     <div class="content">${renderContent(r.content)}</div>
-  </div>`).join('');
-  return `<div class="card post">
-    <div class="post-head"><span class="author">${esc(p.author_name)}</span><span class="time">${fmtDate(p.created_at)}</span>${adminBtns(p)}</div>
+  </article></li>`).join('');
+  return `<article class="post">
+    <header><span class="author">${esc(p.author_name)}</span><time>${fmtDate(p.created_at)}</time>${adminBtns(p)}</header>
     <div class="content">${renderContent(p.content)}</div>
-    ${replies ? `<div class="replies">${replies}</div>` : ''}
-    ${state.user?.approved === 1 ? `<button class="reply-btn" onclick="replyTo(${p.id},'${esc(p.author_name)}')">回复</button>` : ''}
-  </div>`;
+    ${replies ? `<ul class="replies">${replies}</ul>` : ''}
+    ${state.user?.approved === 1 ? `<button onclick="replyTo(${p.id},'${esc(p.author_name)}')">回复</button>` : ''}
+  </article>`;
 }
 
 async function doLogin(e) {
@@ -155,16 +155,17 @@ async function showAdmin() {
   const r = await api('/api/admin/users');
   if (!r.success) return;
   const el = document.getElementById('admin-area');
-  el.innerHTML = `<h3>用户管理</h3>` + (r.data.length
-    ? r.data.map((u) => `<div class="card">
-        <div class="post-head"><span class="author">${esc(u.name)}</span>
-        <span class="time">${u.role === 'admin' ? '管理员' : u.approved ? '已通过' : '待审核'}</span>
-        <span class="time">${esc(u.email)}</span><span class="time">注册: ${fmtDate(u.created_at)}</span></div>
-        <div class="actions">
+  el.innerHTML = `<h2>用户管理</h2>` + (r.data.length
+    ? `<ul class="userlist">` + r.data.map((u) => `<li>
+        <span class="author">${esc(u.name)}</span>
+        <span class="who">${u.role === 'admin' ? '管理员' : u.approved ? '已通过' : '待审核'}</span>
+        <span class="who">${esc(u.email)}</span>
+        <span class="who">${fmtDate(u.created_at)}</span>
+        <span class="actions">
           ${u.approved ? `<button onclick="adminUser(${u.id},'unapprove')">取消通过</button>` : `<button onclick="adminUser(${u.id},'approve')">通过</button>`}
           ${u.role === 'admin' ? `<button onclick="adminUser(${u.id},'remove-admin')">取消管理员</button>` : `<button onclick="adminUser(${u.id},'set-admin')">设为管理员</button>`}
-        </div>
-      </div>`).join('')
+        </span>
+      </li>`).join('') + `</ul>`
     : '<p class="tip">暂无用户</p>');
 }
 

@@ -1,17 +1,21 @@
 /* 嵌入样式 — 零侵入：无重置，仅 #app 作用域，字体/颜色继承宿主 */
 #app { font-family: inherit; color: inherit; line-height: 1.6; font-size: inherit; }
-#app .card { margin-bottom: 10px; padding: 8px 0; border-bottom: 1px solid rgba(127,127,127,.18); }
-#app .post-head { display: flex; align-items: center; gap: 8px; font-size: .8em; opacity: .75; margin-bottom: 2px; flex-wrap: wrap; }
+#app article.post { margin-bottom: 8px; padding: 6px 0; border-bottom: 1px solid rgba(127,127,127,.18); }
+#app article.post header { display: flex; align-items: center; gap: 8px; font-size: .8em; opacity: .75; margin-bottom: 2px; flex-wrap: wrap; }
 #app .author { font-weight: 600; }
 #app .content { word-break: break-word; }
 #app .content img { max-width: 100%; }
-#app .replies { margin: 6px 0 0 16px; padding-left: 10px; border-left: 2px solid rgba(127,127,127,.25); }
+#app ul.replies { list-style: none; margin: 6px 0 0 16px; padding-left: 10px; border-left: 2px solid rgba(127,127,127,.25); }
 #app .tip { opacity: .6; font-size: .85em; }
-#app textarea { width: 100%; min-height: 60px; padding: 8px; font: inherit; border: 1px solid rgba(127,127,127,.4); border-radius: 4px; box-sizing: border-box; background: inherit; }
-#app input { padding: 6px 8px; font: inherit; border: 1px solid rgba(127,127,127,.4); border-radius: 4px; box-sizing: border-box; background: inherit; }
-#app button { padding: 4px 10px; font: inherit; border: 1px solid rgba(127,127,127,.4); border-radius: 4px; background: inherit; cursor: pointer; }
-#app .actions { margin-top: 6px; }
+#app textarea, #app input { font: inherit; border: 1px solid rgba(127,127,127,.4); padding: 5px 7px; box-sizing: border-box; background: inherit; }
+#app textarea { width: 100%; min-height: 60px; }
+#app .auth input { width: auto; }
+#app button { padding: 3px 8px; font: inherit; border: 1px solid rgba(127,127,127,.4); background: inherit; cursor: pointer; }
+#app .actions { margin-top: 4px; }
 #app .auth, #app .auth-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-#app .load-more { text-align: center; margin: 10px 0; }
+#app .load-more { text-align: center; margin: 8px 0; }
 #app .reply-hint { font-size: .85em; opacity: .8; margin: 4px 0; }
 #app .link { text-decoration: underline; cursor: pointer; }
+#app ul.userlist { list-style: none; margin: 6px 0; padding: 0; }
+#app ul.userlist li { display: flex; gap: 10px; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(127,127,127,.12); font-size: .9em; flex-wrap: wrap; }
+#app ul.userlist .actions { margin: 0; }
