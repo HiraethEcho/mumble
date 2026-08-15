@@ -85,13 +85,12 @@ window.addEventListener('load', notifyHeight);
 function authHTML() {
   if (state.user) return '';
   return `<form class="auth-form" onsubmit="doLogin(event)">
-      <input id="rg-name" placeholder="昵称" required>
-      <input id="rg-email" type="email" placeholder="邮箱" oninput="toggleRequired()">
-      <input id="rg-pass" type="password" placeholder="密码" required>
+      <input id="rg-name" placeholder="昵称（无邮箱时必填）" required>
+      <input id="rg-email" type="email" placeholder="邮箱（填了可免密登录）" oninput="toggleRequired()">
+      <input id="rg-pass" type="password" placeholder="密码（无邮箱时必填）" required>
       <button class="btn-primary" type="submit">登录</button>
       <button type="button" onclick="doRegister()">注册</button>
-    </form>
-    <p class="tip">填了邮箱：昵称/密码可留空，邮箱直接登录；没填邮箱：昵称+密码必填</p>`;
+    </form>`;
 }
 
 // 有邮箱 → 昵称/密码选填；无邮箱 → 昵称/密码必填
@@ -104,17 +103,17 @@ function toggleRequired() {
 function composerHTML() {
   const replyHint = state.replyTo ? `<div class="reply-hint">正在回复 #${state.replyTo.id} ${esc(state.replyTo.name)} <span class="link" onclick="cancelReply()">取消</span></div>` : '';
   if (!state.user) {
-    return `<form class="composer">
-      <textarea id="content" placeholder="说点什么…支持 Markdown 与 $公式$" maxlength="5000"></textarea>
+    return `<div class="composer">
+      <textarea id="content" placeholder="说点什么…支持 Markdown、$公式$ 与 > [!note] 提示块" maxlength="5000"></textarea>
       ${replyHint}
       ${authHTML()}
-    </form>`;
+    </div>`;
   }
   const badge = state.user.role === 'admin' ? '管理员' : state.user.approved ? '已通过' : '待审核';
   const adminBtn = state.user.role === 'admin' ? `<button onclick="showAdmin()">审核</button>` : '';
   const canPost = state.user.approved === 1;
   return `<form class="composer" onsubmit="submitPost(event)">
-    <textarea id="content" placeholder="说点什么…支持 Markdown 与 $公式$" maxlength="5000"></textarea>
+    <textarea id="content" placeholder="说点什么…支持 Markdown、$公式$ 与 > [!note] 提示块" maxlength="5000"></textarea>
     ${replyHint}
     ${canPost ? '' : '<p class="tip">账号待管理员审核，通过后可发言</p>'}
     <div class="composer-bar">

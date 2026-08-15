@@ -1,7 +1,7 @@
 /* 独立页样式 — 极简：无圆角、无阴影、纯黑白 + 单一强调色 */
 * { box-sizing: border-box; }
 body { margin: 0; font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #222; line-height: 1.7; }
-.page { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+.page { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
 .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
 h1 { font-size: 22px; margin: 0; }
 .auth { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
