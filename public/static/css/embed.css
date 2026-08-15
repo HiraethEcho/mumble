@@ -15,6 +15,8 @@
 #app .auth input { width: auto; }
 #app button { padding: 3px 8px; font: inherit; border: 1px solid rgba(127,127,127,.4); background: inherit; cursor: pointer; }
 #app .actions { margin-top: 4px; }
+#app .composer-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+#app .composer-bar .who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #app .auth, #app .auth-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 #app .load-more { text-align: center; margin: 8px 0; }
 #app .reply-hint { font-size: .85em; opacity: .8; margin: 4px 0; }

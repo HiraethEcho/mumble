@@ -1,5 +1,5 @@
 // 极简说说 — 前端核心（独立页与嵌入 iframe 复用）
-const state = { user: null, posts: [], nextCursor: 0, replyTo: null, authMode: 'login', editing: null };
+const state = { user: null, posts: [], nextCursor: 0, replyTo: null, editing: null };
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -65,7 +65,6 @@ async function loadPosts(reset = false) {
 }
 
 function render() {
-  document.getElementById('auth-area') && (document.getElementById('auth-area').innerHTML = authHTML());
   document.getElementById('composer').innerHTML = composerHTML();
   document.getElementById('list').innerHTML = state.posts.length
     ? state.posts.map(postHTML).join('')
@@ -84,41 +83,37 @@ function notifyHeight() {
 window.addEventListener('load', notifyHeight);
 
 function authHTML() {
-  if (state.user) {
-    const badge = state.user.role === 'admin' ? '管理员' : state.user.approved ? '已通过' : '待审核';
-    const adminBtn = state.user.role === 'admin' ? `<button onclick="showAdmin()">审核</button>` : '';
-    return `<div class="auth"><span class="who">${esc(state.user.name)} · ${badge}</span>${adminBtn}<button onclick="doLogout()">退出</button></div>`;
-  }
-  if (state.authMode === 'login') {
-    return `<div class="auth">
-      <form class="auth-form" onsubmit="doLogin(event)">
-        <input id="lg-ident" placeholder="邮箱或昵称" required>
-        <input id="lg-pass" type="password" placeholder="密码（邮箱登录可不填）">
-        <button class="btn-primary" type="submit">登录</button>
-      </form>
-      <button onclick="state.authMode='reg';render()">注册</button>
-      <p class="tip">填邮箱可直接登录（免密码）；填昵称需输入密码</p>
-    </div>`;
-  }
-  return `<div class="auth">
-    <form class="auth-form" onsubmit="doRegister(event)">
-      <input id="rg-name" placeholder="昵称（必填，唯一）" required>
-      <input id="rg-email" type="email" placeholder="邮箱（选填，可作为登录凭据）">
-      <input id="rg-pass" type="password" placeholder="密码（至少6位；填了邮箱则登录时可不填）" required>
-      <button class="btn-primary" type="submit">注册</button>
+  if (state.user) return '';
+  return `<form class="auth-form" onsubmit="doLogin(event)">
+      <input id="rg-name" placeholder="昵称" required>
+      <input id="rg-email" type="email" placeholder="邮箱(选填)">
+      <input id="rg-pass" type="password" placeholder="密码">
+      <button class="btn-primary" type="submit">登录</button>
+      <button type="button" onclick="doRegister()">注册</button>
     </form>
-    <button onclick="state.authMode='login';render()">登录</button>
-    <p class="tip">注册后需管理员审核通过才能发言；昵称+密码 或 邮箱 均可登录</p>
-  </div>`;
+    <p class="tip">登录：昵称+密码，或邮箱直接登录(免密码)；注册：昵称+密码必填，邮箱选填</p>`;
 }
 
 function composerHTML() {
-  if (!state.user) return '<p class="tip">登录后可发言</p>';
-  if (state.user.approved !== 1) return '<p class="tip">账号待管理员审核，通过后可发言</p>';
+  const replyHint = state.replyTo ? `<div class="reply-hint">正在回复 #${state.replyTo.id} ${esc(state.replyTo.name)} <span class="link" onclick="cancelReply()">取消</span></div>` : '';
+  if (!state.user) {
+    return `<form class="composer">
+      <textarea id="content" placeholder="说点什么…支持 Markdown 与 $公式$" maxlength="5000"></textarea>
+      ${replyHint}
+      ${authHTML()}
+    </form>`;
+  }
+  const badge = state.user.role === 'admin' ? '管理员' : state.user.approved ? '已通过' : '待审核';
+  const adminBtn = state.user.role === 'admin' ? `<button onclick="showAdmin()">审核</button>` : '';
+  const canPost = state.user.approved === 1;
   return `<form class="composer" onsubmit="submitPost(event)">
     <textarea id="content" placeholder="说点什么…支持 Markdown 与 $公式$" maxlength="5000"></textarea>
-    ${state.replyTo ? `<div class="reply-hint">正在回复 #${state.replyTo.id} ${esc(state.replyTo.name)} <span class="link" onclick="cancelReply()">取消</span></div>` : ''}
-    <div class="actions"><button class="btn-primary" type="submit">发布</button></div>
+    ${replyHint}
+    ${canPost ? '' : '<p class="tip">账号待管理员审核，通过后可发言</p>'}
+    <div class="composer-bar">
+      <div class="who"><span class="author">${esc(state.user.name)}</span> · ${badge} ${adminBtn} <button onclick="doLogout()">退出</button></div>
+      ${canPost ? '<button class="btn-primary" type="submit">发布</button>' : ''}
+    </div>
   </form>`;
 }
 
@@ -158,14 +153,14 @@ function postHTML(p) {
 
 async function doLogin(e) {
   e.preventDefault();
-  const r = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ ident: document.getElementById('lg-ident').value, password: document.getElementById('lg-pass').value }) });
+  const ident = document.getElementById('rg-email').value.trim() || document.getElementById('rg-name').value.trim();
+  const r = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ ident, password: document.getElementById('rg-pass').value }) });
   if (r.success) { state.user = r.data; await loadPosts(true); }
 }
 
-async function doRegister(e) {
-  e.preventDefault();
+async function doRegister() {
   const r = await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ name: document.getElementById('rg-name').value, email: document.getElementById('rg-email').value, password: document.getElementById('rg-pass').value }) });
-  if (r.success) { state.authMode = 'login'; render(); alert('注册成功，等待管理员审核'); }
+  if (r.success) { render(); alert('注册成功，等待管理员审核'); }
 }
 
 async function doLogout() {

@@ -36,6 +36,8 @@ button:hover { background: #f0f0f0; }
 .link { color: #2563eb; cursor: pointer; text-decoration: underline; }
 .load-more { text-align: center; margin: 20px 0; }
 .composer { margin-bottom: 20px; }
+.composer-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.composer-bar .who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 /* 用户管理：简单列表 */
 ul.userlist { list-style: none; margin: 8px 0; padding: 0; }
