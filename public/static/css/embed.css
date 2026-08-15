@@ -18,6 +18,7 @@
 #app .composer-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 #app .composer-bar .who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #app .auth, #app .auth-form { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+#app .auth-form button { margin-left: auto; }
 #app .load-more { text-align: center; margin: 8px 0; }
 #app .reply-hint { font-size: .85em; opacity: .8; margin: 4px 0; }
 #app .link { text-decoration: underline; cursor: pointer; }

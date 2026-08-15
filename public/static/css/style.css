@@ -6,6 +6,7 @@ body { margin: 0; font-family: system-ui, -apple-system, "PingFang SC", "Microso
 h1 { font-size: 22px; margin: 0; }
 .auth { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .auth-form { display: flex; gap: 6px; flex-wrap: wrap; }
+.auth-form button { margin-left: auto; }
 .auth input { width: auto; }
 .who { font-size: 14px; color: #666; }
 .tip { color: #999; font-size: 14px; }
