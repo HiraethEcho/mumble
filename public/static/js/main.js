@@ -16,7 +16,7 @@ const fmtDate = (s) => {
   return isNaN(d) ? String(s).slice(0, 16) : d.toLocaleString('zh-CN', { dateStyle: 'short', timeStyle: 'short' });
 };
 
-// Markdown + LaTeX 渲染（含极简 XSS 防护：忽略用户 raw HTML，拦截 javascript: 链接）
+// Markdown + LaTeX 渲染（marked v18 token API；极简 XSS 防护：忽略 raw HTML，拦截 javascript: 链接）
 function renderContent(text) {
   const math = [];
   let t = String(text);
@@ -26,8 +26,19 @@ function renderContent(text) {
       .replace(/\$([^$\n]+?)\$/g, (_, e) => { math.push(katex.renderToString(e)); return '\u0001M' + (math.length - 1) + '\u0001'; });
   }
   const renderer = new marked.Renderer();
-  renderer.html = (h) => esc(h);
-  renderer.link = (href, title, text) => (href && href.startsWith('javascript:')) ? text : `<a href="${esc(href)}"${title ? ` title="${esc(title)}"` : ''} target="_blank" rel="noopener">${text}</a>`;
+  renderer.html = (token) => esc(typeof token === 'string' ? token : token.raw ?? '');
+  renderer.link = (token) => {
+    const href = String(token.href ?? '');
+    if (/^javascript:/i.test(href)) return token.text ?? '';
+    return `<a href="${esc(href)}"${token.title ? ` title="${esc(token.title)}"` : ''} target="_blank" rel="noopener">${token.text ?? ''}</a>`;
+  };
+  // callout 支持：> [!note] 标题行
+  renderer.blockquote = function (token) {
+    const html = this.parser.parse(token.tokens);
+    const m = html.match(/^\s*<p>\[!([^\]]+)\]([\s\S]*?)<\/p>/);
+    if (!m) return `<blockquote>${html}</blockquote>`;
+    return `<blockquote class="callout callout-${esc(m[1].toLowerCase())}"><p class="callout-title">${esc(m[1])}</p>${m[2].trim() ? `<p>${m[2].trim()}</p>` : ''}</blockquote>`;
+  };
   return marked.parse(t, { gfm: true, breaks: true, renderer }).replace(/\u0001M(\d+)\u0001/g, (_, i) => math[i]);
 }
 

@@ -17,6 +17,13 @@ article.post header { font-size: 13px; color: #888; margin-bottom: 4px; }
 .content img { max-width: 100%; }
 ul.replies { list-style: none; margin: 8px 0 0 20px; padding-left: 12px; border-left: 2px solid #eee; }
 
+blockquote.callout { margin: 8px 0; padding: 8px 12px; border-left: 3px solid #2563eb; background: #f4f6fb; }
+.callout-title { font-weight: 700; margin: 0 0 4px; }
+blockquote.callout p { margin: 4px 0; }
+.callout-tip { border-color: #16a34a; background: #f3faf5; }
+.callout-warn, .callout-warning, .callout-caution { border-color: #d97706; background: #fdf7ef; }
+.callout-danger, .callout-error { border-color: #dc2626; background: #fdf3f3; }
+
 textarea { width: 100%; min-height: 84px; padding: 8px; font: inherit; border: 1px solid #ccc; resize: vertical; }
 input { padding: 6px 8px; border: 1px solid #ccc; font: inherit; }
 textarea:focus, input:focus { outline: none; border-color: #2563eb; }
