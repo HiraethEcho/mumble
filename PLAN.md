@@ -26,5 +26,6 @@
 
 ## Phase 5: 文档 + 部署
 
-- [ ] `README.md`（开发/部署步骤 + 管理员初始化说明）
+- [x] `README.md`（开发/部署步骤 + 管理员初始化说明）
 - [ ] 生产 D1 迁移 + `wrangler deploy`
+  ⏸ parked (2026-08-16): README 完成 / 下一步=生产部署（`wrangler d1 create mumble-db` + secrets + `wrangler deploy`）/ 等待用户决定部署时机；部署前须将 ADMIN_PASSWORD/SESSION_SECRET 从 wrangler.toml 改为 Cloudflare secrets
