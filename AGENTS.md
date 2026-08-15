@@ -1,4 +1,4 @@
-# ShuoShuo — 极简云端留言板
+# Mumble — 极简云端留言板
 
 Lite workflow project.
 

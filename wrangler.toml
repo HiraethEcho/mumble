@@ -1,11 +1,11 @@
-name = "shuoshuo"
+name = "mumble"
 main = "worker/index.js"
 compatibility_date = "2026-08-06"
 assets = { directory = "./public" }
 
 [[d1_databases]]
 binding = "DB"
-database_name = "shuoshuo-db"
+database_name = "mumble-db"
 database_id = "00000000-0000-0000-0000-000000000000"
 
 [vars]

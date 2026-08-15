@@ -1,4 +1,4 @@
-# 说说 (ShuoShuo)
+# 说说 (Mumble)
 
 极简云端留言板。前端原生 HTML/CSS/JS，后端 Cloudflare Workers + D1，零框架零依赖。
 
@@ -37,6 +37,6 @@ npx wrangler dev --local
 ## 部署
 
 ```bash
-npx wrangler d1 create shuoshuo-db      # 建生产库，得到 database_id 填入 wrangler.toml
+npx wrangler d1 create mumble-db      # 建生产库，得到 database_id 填入 wrangler.toml
 npx wrangler deploy
 ```
