@@ -76,21 +76,23 @@ function authHTML() {
   if (state.authMode === 'login') {
     return `<div class="auth">
       <form class="auth-form" onsubmit="doLogin(event)">
-        <input id="lg-email" type="email" placeholder="邮箱" required>
-        <input id="lg-pass" type="password" placeholder="密码" required>
+        <input id="lg-ident" placeholder="邮箱或昵称" required>
+        <input id="lg-pass" type="password" placeholder="密码（邮箱登录可不填）">
         <button class="btn-primary" type="submit">登录</button>
       </form>
       <button onclick="state.authMode='reg';render()">注册</button>
+      <p class="tip">填邮箱可直接登录（免密码）；填昵称需输入密码</p>
     </div>`;
   }
   return `<div class="auth">
     <form class="auth-form" onsubmit="doRegister(event)">
-      <input id="rg-name" placeholder="昵称" required>
-      <input id="rg-email" type="email" placeholder="邮箱(选填)">
-      <input id="rg-pass" type="password" placeholder="密码(至少6位)" required>
+      <input id="rg-name" placeholder="昵称（必填，唯一）" required>
+      <input id="rg-email" type="email" placeholder="邮箱（选填，可作为登录凭据）">
+      <input id="rg-pass" type="password" placeholder="密码（至少6位；填了邮箱则登录时可不填）" required>
       <button class="btn-primary" type="submit">注册</button>
     </form>
     <button onclick="state.authMode='login';render()">登录</button>
+    <p class="tip">注册后需管理员审核通过才能发言；昵称+密码 或 邮箱 均可登录</p>
   </div>`;
 }
 
@@ -122,7 +124,7 @@ function postHTML(p) {
 
 async function doLogin(e) {
   e.preventDefault();
-  const r = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: document.getElementById('lg-email').value, password: document.getElementById('lg-pass').value }) });
+  const r = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ ident: document.getElementById('lg-ident').value, password: document.getElementById('lg-pass').value }) });
   if (r.success) { state.user = r.data; await loadPosts(true); }
 }
 

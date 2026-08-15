@@ -125,6 +125,8 @@ export default {
         if (!body?.name?.trim() || !body?.password) return json({ success: false, error: '昵称/密码必填' }, 400);
         if (body.email && !body.email.includes('@')) return json({ success: false, error: '邮箱格式错误' }, 400);
         if (body.password.length < 6) return json({ success: false, error: '密码至少 6 位' }, 400);
+        const nameTaken = await env.DB.prepare('SELECT id FROM users WHERE name = ?').bind(body.name.trim()).first();
+        if (nameTaken) return json({ success: false, error: '昵称已被使用' }, 409);
         if (body.email) {
           const existing = await env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(body.email).first();
           if (existing) return json({ success: false, error: '邮箱已注册' }, 409);
@@ -137,11 +139,19 @@ export default {
 
       if (path === '/api/auth/login' && request.method === 'POST') {
         const body = await request.json().catch(() => null);
-        if (!body?.email || !body?.password) return json({ success: false, error: 'email/password 必填' }, 400);
-        const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(body.email).first();
-        if (!user || !(await verifyPassword(body.password, user.password_hash))) return json({ success: false, error: '邮箱或密码错误' }, 401);
+        const ident = String(body?.ident ?? '').trim();
+        if (!ident) return json({ success: false, error: '请输入邮箱或昵称' }, 400);
+        let user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(ident).first();
+        let byEmail = true;
+        if (!user) {
+          byEmail = false;
+          user = await env.DB.prepare('SELECT * FROM users WHERE name = ?').bind(ident).first();
+          if (!user || !(await verifyPassword(String(body?.password ?? ''), user.password_hash))) {
+            return json({ success: false, error: '昵称或密码错误' }, 401);
+          }
+        }
         const token = await createSessionToken(user.id, env);
-        return json({ success: true, message: '登录成功', data: { id: user.id, name: user.name, role: user.role, approved: user.approved } }, 200, { 'Set-Cookie': sessionCookie(token) });
+        return json({ success: true, message: '登录成功', data: { id: user.id, name: user.name, role: user.role, approved: user.approved, via: byEmail ? 'email' : 'name' } }, 200, { 'Set-Cookie': sessionCookie(token) });
       }
 
       if (path === '/api/auth/logout' && request.method === 'POST') {
