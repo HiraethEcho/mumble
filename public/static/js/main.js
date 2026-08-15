@@ -86,12 +86,19 @@ function authHTML() {
   if (state.user) return '';
   return `<form class="auth-form" onsubmit="doLogin(event)">
       <input id="rg-name" placeholder="昵称" required>
-      <input id="rg-email" type="email" placeholder="邮箱(选填)">
-      <input id="rg-pass" type="password" placeholder="密码">
+      <input id="rg-email" type="email" placeholder="邮箱" oninput="toggleRequired()">
+      <input id="rg-pass" type="password" placeholder="密码" required>
       <button class="btn-primary" type="submit">登录</button>
       <button type="button" onclick="doRegister()">注册</button>
     </form>
-    <p class="tip">登录：昵称+密码，或邮箱直接登录(免密码)；注册：昵称+密码必填，邮箱选填</p>`;
+    <p class="tip">填了邮箱：昵称/密码可留空，邮箱直接登录；没填邮箱：昵称+密码必填</p>`;
+}
+
+// 有邮箱 → 昵称/密码选填；无邮箱 → 昵称/密码必填
+function toggleRequired() {
+  const hasEmail = !!document.getElementById('rg-email').value.trim();
+  document.getElementById('rg-name').required = !hasEmail;
+  document.getElementById('rg-pass').required = !hasEmail;
 }
 
 function composerHTML() {
