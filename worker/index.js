@@ -198,9 +198,20 @@ export default {
         }
 
         if (path.startsWith('/api/admin/users/')) {
-          const id = Number(path.split('/')[4]); // /api/admin/users/<id>/approve
-          const result = await env.DB.prepare("UPDATE users SET approved = 1 WHERE id = ? AND role = 'user'").bind(id).run();
-          return json({ success: true, message: '已审核通过', changed: result.meta.changes });
+          const id = Number(path.split('/')[4]);
+          const action = path.split('/')[5] || ''; // approve | unapprove | set-admin | remove-admin
+          const sql = {
+            approve: "UPDATE users SET approved = 1 WHERE id = ?",
+            unapprove: "UPDATE users SET approved = 0 WHERE id = ?",
+            'set-admin': "UPDATE users SET role = 'admin', approved = 1 WHERE id = ?",
+            'remove-admin': "UPDATE users SET role = 'user' WHERE id = ?",
+          }[action];
+          if (!sql) return json({ success: false, error: '未知操作' }, 400);
+          if ((action === 'set-admin' || action === 'remove-admin') && id === user.id) {
+            return json({ success: false, error: '不能操作自己' }, 400);
+          }
+          await env.DB.prepare(sql).bind(id).run();
+          return json({ success: true, message: '已更新' });
         }
       }
 

@@ -152,15 +152,23 @@ async function deletePost(id) {
 }
 
 async function showAdmin() {
-  const r = await api('/api/admin/users?approved=0');
+  const r = await api('/api/admin/users');
   if (!r.success) return;
   const el = document.getElementById('admin-area');
-  el.innerHTML = r.data.length
-    ? r.data.map((u) => `<div class="card">${esc(u.name)} ${esc(u.email)} <button onclick="approveUser(${u.id})">通过</button></div>`).join('')
-    : '<p class="tip">暂无待审核用户</p>';
+  el.innerHTML = `<h3>用户管理</h3>` + (r.data.length
+    ? r.data.map((u) => `<div class="card">
+        <div class="post-head"><span class="author">${esc(u.name)}</span>
+        <span class="time">${u.role === 'admin' ? '管理员' : u.approved ? '已通过' : '待审核'}</span>
+        <span class="time">${esc(u.email)}</span><span class="time">注册: ${fmtDate(u.created_at)}</span></div>
+        <div class="actions">
+          ${u.approved ? `<button onclick="adminUser(${u.id},'unapprove')">取消通过</button>` : `<button onclick="adminUser(${u.id},'approve')">通过</button>`}
+          ${u.role === 'admin' ? `<button onclick="adminUser(${u.id},'remove-admin')">取消管理员</button>` : `<button onclick="adminUser(${u.id},'set-admin')">设为管理员</button>`}
+        </div>
+      </div>`).join('')
+    : '<p class="tip">暂无用户</p>');
 }
 
-async function approveUser(id) {
-  const r = await api(`/api/admin/users/${id}/approve`, { method: 'POST' });
+async function adminUser(id, action) {
+  const r = await api(`/api/admin/users/${id}/${action}`, { method: 'POST' });
   if (r.success) showAdmin();
 }
