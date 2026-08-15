@@ -107,7 +107,16 @@ function composerHTML() {
 }
 
 const adminBtns = (p) => state.user?.role === 'admin'
-  ? `<button onclick="editPost(${p.id},${JSON.stringify(p.content)})">编辑</button><button onclick="deletePost(${p.id})">删除</button>` : '';
+  ? `<button data-id="${p.id}" onclick="editPost(this)">编辑</button><button data-id="${p.id}" onclick="deletePost(this)">删除</button>` : '';
+
+function findPost(id) {
+  for (const p of state.posts) {
+    if (p.id === id) return p;
+    const r = p.replies.find((x) => x.id === id);
+    if (r) return r;
+  }
+  return null;
+}
 
 function postHTML(p) {
   const replies = p.replies.map((r) => `<li><article class="post">
@@ -151,14 +160,17 @@ async function submitPost(e) {
 function replyTo(id, name) { state.replyTo = { id, name }; render(); document.getElementById('content')?.focus(); }
 function cancelReply() { state.replyTo = null; render(); }
 
-async function editPost(id, content) {
-  const next = prompt('编辑内容', content);
+async function editPost(btn) {
+  const post = findPost(Number(btn.dataset.id));
+  if (!post) return;
+  const next = prompt('编辑内容', post.content);
   if (next === null) return;
-  const r = await api(`/api/posts/${id}`, { method: 'PUT', body: JSON.stringify({ content: next }) });
+  const r = await api(`/api/posts/${post.id}`, { method: 'PUT', body: JSON.stringify({ content: next }) });
   if (r.success) await loadPosts(true);
 }
 
-async function deletePost(id) {
+async function deletePost(btn) {
+  const id = Number(btn.dataset.id);
   if (!confirm('确认删除该条及回复？')) return;
   const r = await api(`/api/posts/${id}`, { method: 'DELETE' });
   if (r.success) await loadPosts(true);
