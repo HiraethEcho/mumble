@@ -122,8 +122,12 @@ function composerHTML() {
   </form>`;
 }
 
-const adminBtns = (p) => state.user?.role === 'admin'
-  ? `<button data-id="${p.id}" onclick="editPost(this)">编辑</button><button data-id="${p.id}" onclick="deletePost(this)">删除</button>` : '';
+const adminBtns = (p) => {
+  const btns = [];
+  if (state.user && p.author_id === state.user.id) btns.push(`<button data-id="${p.id}" onclick="editPost(this)">编辑</button>`);
+  if (state.user?.role === 'admin') btns.push(`<button data-id="${p.id}" onclick="deletePost(this)">删除</button>`);
+  return btns.join('');
+};
 
 function findPost(id) {
   for (const p of state.posts) {

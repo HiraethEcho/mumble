@@ -234,21 +234,27 @@ export default {
         return json({ success: true, message: '发布成功', data: { id: result.meta.last_row_id } });
       }
 
-      // ---------- 管理员：编辑/删除/审核 ----------
-      if ((path.startsWith('/api/posts/') && (request.method === 'PUT' || request.method === 'DELETE')) ||
+      // 编辑自己的帖子（登录用户）
+      if (path.startsWith('/api/posts/') && request.method === 'PUT') {
+        const user = await verifySession(request, env);
+        if (!user) return json({ success: false, error: '请先登录' }, 401);
+        const id = Number(path.split('/').pop());
+        const body = await request.json().catch(() => null);
+        if (!body?.content?.trim()) return json({ success: false, error: '内容不能为空' }, 400);
+        const result = await env.DB.prepare("UPDATE posts SET content = ?, updated_at = datetime('now') WHERE id = ? AND author_id = ?")
+          .bind(body.content.trim(), id, user.id).run();
+        if (!result.meta.changes) return json({ success: false, error: '只能编辑自己的内容' }, 403);
+        return json({ success: true, message: '已更新' });
+      }
+
+      // ---------- 管理员：删除/审核 ----------
+      if ((path.startsWith('/api/posts/') && request.method === 'DELETE') ||
           (path.startsWith('/api/admin/') && request.method !== 'OPTIONS')) {
         const user = await verifySession(request, env);
         if (!user || user.role !== 'admin') return json({ success: false, error: '需要管理员权限' }, 403);
 
         if (path.startsWith('/api/posts/')) {
           const id = Number(path.split('/').pop());
-          if (request.method === 'PUT') {
-            const body = await request.json().catch(() => null);
-            if (!body?.content?.trim()) return json({ success: false, error: '内容不能为空' }, 400);
-            await env.DB.prepare("UPDATE posts SET content = ?, updated_at = datetime('now') WHERE id = ?")
-              .bind(body.content.trim(), id).run();
-            return json({ success: true, message: '已更新' });
-          }
           await env.DB.prepare('DELETE FROM posts WHERE id = ?').bind(id).run(); // 回复级联删
           return json({ success: true, message: '已删除' });
         }
