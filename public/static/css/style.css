@@ -1,0 +1,30 @@
+/* 独立页样式 — 极简原生 CSS */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #fafafa; color: #222; line-height: 1.7; }
+.page { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+.page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+h1 { font-size: 22px; margin: 0; font-weight: 700; }
+.auth { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.auth-form { display: flex; gap: 6px; flex-wrap: wrap; }
+.auth input { width: auto; }
+.who { font-size: 14px; color: #555; }
+.tip { color: #999; font-size: 14px; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+.post-head { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; margin-bottom: 4px; flex-wrap: wrap; }
+.author { color: #2563eb; font-weight: 600; }
+.content { word-break: break-word; font-size: 15px; }
+.content img { max-width: 100%; border-radius: 4px; }
+.replies { margin: 8px 0 0 20px; padding-left: 12px; border-left: 2px solid #eee; }
+.reply-btn { margin-top: 8px; }
+textarea { width: 100%; min-height: 84px; padding: 10px; font: inherit; border: 1px solid #ccc; border-radius: 8px; resize: vertical; }
+textarea:focus, input:focus { outline: 2px solid #2563eb33; border-color: #2563eb; }
+input { padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
+.actions { margin-top: 8px; }
+button { padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer; font: inherit; font-size: 14px; }
+button:hover { background: #f0f0f0; }
+.btn-primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+.btn-primary:hover { background: #1d4ed8; }
+.reply-hint { color: #2563eb; font-size: 13px; margin: 6px 0; }
+.link { color: #2563eb; cursor: pointer; text-decoration: underline; }
+.load-more { text-align: center; margin: 20px 0; }
+.composer { margin-bottom: 20px; }

@@ -1,0 +1,32 @@
+{
+  "compaction": {
+    "enabled": true
+  },
+  "doubleEscapeAction": "tree",
+  "enableInstallTelemetry": false,
+  "enableSkillCommands": true,
+  "hideThinkingBlock": true,
+  "quietStartup": false,
+  "steeringMode": "all",
+  "treeFilterMode": "no-tools",
+  "followUpMode": "all",
+  "transport": "auto",
+  "showCacheMissNotices": true,
+  "autocompleteMaxVisible": 10,
+  "skills": [
+    "~/agentkit/skills/code-minimal/pickup",
+    "~/agentkit/skills/code-minimal/archive",
+    "~/agentkit/skills/code-minimal/rest",
+    "~/agentkit/skills/code-minimal/upgrade",
+    "~/agentkit/skills/code-lite/app-lite-sdd",
+    "~/agentkit/skills/code-lite/init-lite-sdd",
+    "~/agentkit/skills/code-lite/lite-brainstorm",
+    "~/agentkit/skills/code-lite/lite-refine",
+    "~/agentkit/skills/code-lite/lite-plan",
+    "~/agentkit/skills/code-lite/lite-build"
+  ],
+  "prompts": [
+    "~/agentkit/commands/code-minimal",
+    "~/agentkit/commands/code-lite"
+  ]
+}

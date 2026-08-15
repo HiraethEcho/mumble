@@ -1,0 +1,14 @@
+name = "shuoshuo"
+main = "worker/index.js"
+compatibility_date = "2026-08-06"
+assets = { directory = "./public" }
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shuoshuo-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[vars]
+ADMIN_EMAIL = "admin@example.com"
+ADMIN_PASSWORD = "changeme123"
+SESSION_SECRET = "dev-secret-change-in-production"

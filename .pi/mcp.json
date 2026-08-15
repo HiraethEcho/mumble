@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ],
+      "enabled": true,
+      "directTools": true
+    },
+    "codebase-memory-mcp": {
+      "command": "/usr/bin/codebase-memory-mcp",
+      "enabled": true
+    }
+  }
+}
