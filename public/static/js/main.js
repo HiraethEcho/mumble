@@ -104,7 +104,7 @@ function composerHTML() {
   const replyHint = state.replyTo ? `<div class="reply-hint">正在回复 #${state.replyTo.id} ${esc(state.replyTo.name)} <span class="link" onclick="cancelReply()">取消</span></div>` : '';
   if (!state.user) {
     return `<div class="composer">
-      <textarea id="content" placeholder="说点什么…支持 Markdown、$公式$ 与 > [!note] 提示块" maxlength="5000"></textarea>
+      <textarea id="content" placeholder="登录方式：填邮箱直接登录（免密码），或昵称+密码；支持 Markdown、$公式$ 与 > [!note] 提示块" maxlength="5000"></textarea>
       ${replyHint}
       ${authHTML()}
     </div>`;
