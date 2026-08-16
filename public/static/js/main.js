@@ -49,7 +49,11 @@ function renderContent(text) {
 
 async function initApp() {
   const cfg = window.SITE_CONFIG || {};
-  if (cfg.title) document.title = cfg.title;
+  if (cfg.title) {
+    document.title = cfg.title;
+    const h1 = document.querySelector('.page-head h1');
+    if (h1) h1.textContent = cfg.title;
+  }
   state.user = (await api('/api/auth/me').catch(() => null)).data || null;
   await loadPosts(true);
 }

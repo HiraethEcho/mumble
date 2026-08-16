@@ -6,10 +6,7 @@ assets = { directory = "./public" }
 [[d1_databases]]
 binding = "DB"
 database_name = "mumble-db"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "84f84025-48a6-43c4-97ce-35f605cc99ee"
 
 [vars]
-ADMIN_EMAIL = "admin@example.com"
-ADMIN_NAME = "管理员"
-ADMIN_PASSWORD = "changeme123"
-SESSION_SECRET = "dev-secret-change-in-production"
+ADMIN_NAME = "admin"
