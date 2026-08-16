@@ -69,8 +69,8 @@ async function initializeDatabase(env) {
     const existing = await env.DB.prepare(`SELECT id FROM users WHERE role = 'admin'`).all();
     if (existing.results.length === 0) {
       const hash = await hashPassword(env.ADMIN_PASSWORD);
-      await env.DB.prepare(`INSERT INTO users (email, password_hash, name, role, approved) VALUES (?, ?, '管理员', 'admin', 1)`)
-        .bind(env.ADMIN_EMAIL, hash).run();
+      await env.DB.prepare(`INSERT INTO users (email, password_hash, name, role, approved) VALUES (?, ?, ?, 'admin', 1)`)
+        .bind(env.ADMIN_EMAIL, hash, env.ADMIN_NAME || '管理员').run();
     }
   }
 }
