@@ -12,10 +12,6 @@ database_name = "mumble-db"
 database_id = "00000000-0000-0000-0000-000000000000"
 
 [vars]
-# 非敏感配置可放这里（前端 config.js 之外的站点配置）
-ADMIN_NAME = "admin"   # 管理员昵称
-
-# 敏感配置用 secret 设置，不要放这里：
-#   npx wrangler secret put ADMIN_EMAIL     # 管理员邮箱
-#   npx wrangler secret put ADMIN_PASSWORD  # 管理员密码
-#   npx wrangler secret put SESSION_SECRET  # 会话密钥（随机串，如 openssl rand -hex 32）
+# 非敏感 text 配置
+ADMIN_NAME = "admin"     # 管理员昵称
+ADMIN_EMAIL = "admin@example.com"  # 管理员邮箱
